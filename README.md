@@ -1,12 +1,61 @@
-# React + Vite
+# SchoolHelp
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SchoolHelp is a web application that connects schools with volunteers who can provide tutoring services and resources. Built with React, Vite, and TailwindCSS, it provides a platform for schools to request assistance and for volunteers to offer their help.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Authentication System**
 
-## Expanding the ESLint configuration
+  - User registration for volunteers
+  - Secure login for school administrators and volunteers
+  - Role-based access control
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **School Administrator Features**
+
+  - Create new requests for tutoring or resources
+  - Review and manage volunteer offers
+  - Track request status (New, Pending, Closed)
+  - Dashboard to view all school requests
+
+- **Volunteer Features**
+  - Browse available requests from schools
+  - Submit offers to help with specific requests
+  - View request details and requirements
+
+## Tech Stack
+
+- [React](https://reactjs.org/) - Frontend framework
+- [Vite](https://vitejs.dev/) - Build tool
+- [TailwindCSS](https://tailwindcss.com/) - Styling
+- [React Router](https://reactrouter.com/) - Routing
+- [Framer Motion](https://www.framer.com/motion/) - Animations
+
+## Getting Started
+
+1. Clone the repository
+
+```sh
+git clone <repository-url>
+```
+
+2. Install dependenciesnpm install
+
+```sh
+npm install
+```
+
+3. Run the development server
+
+```sh
+npm run dev
+```
+
+## Project Structure
+
+src/
+├── components/ # Reusable UI components
+├── context/ # React context providers
+├── layouts/ # Page layouts
+├── pages/ # Application pages
+├── services/ # Business logic and data handling
+└── assets/ # Static assets
