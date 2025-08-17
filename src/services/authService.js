@@ -1,25 +1,6 @@
 const USERS_KEY = "schoolhelp_users";
 const CURRENT_USER_KEY = "schoolhelp_currentUser";
 
-const initializeUsers = () => {
-  const users = localStorage.getItem(USERS_KEY);
-  if (!users) {
-    // Add a default admin if no users exist
-    const defaultAdmin = {
-      username: "admin",
-      password: "password",
-      fullname: "Admin User",
-      email: "admin@school.com",
-      role: "School Admin",
-      schoolID: 101, // Assign to "City High School"
-      schoolName: "City High School",
-    };
-    saveUsers([defaultAdmin]);
-  }
-};
-
-initializeUsers();
-
 // Helper function to get users from localStorage
 const getUsers = () => {
   const users = localStorage.getItem(USERS_KEY);
@@ -30,6 +11,30 @@ const getUsers = () => {
 const saveUsers = (users) => {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
+
+const initializeUsers = () => {
+  const users = getUsers();
+
+  // Check if an admin user specifically exists
+  const adminExists = users.some((user) => user.username === "admin");
+
+  if (!adminExists) {
+    const defaultAdmin = {
+      username: "admin",
+      password: "password",
+      fullname: "Admin User",
+      email: "admin@school.com",
+      role: "School Admin",
+      schoolID: 101,
+      schoolName: "City High School",
+    };
+    users.push(defaultAdmin);
+    saveUsers(users);
+    console.log("Default admin user created.");
+  }
+};
+
+initializeUsers();
 
 export const authService = {
   registerVolunteer: (userData) => {

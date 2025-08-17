@@ -14,6 +14,7 @@ import SchoolAdminDashboard from "./pages/SchoolAdminDashboard";
 import RequestDetailsPage from "./pages/RequestDetailsPage";
 import CreateRequestPage from "./pages/CreateRequestPage";
 import ReviewOffersPage from "./pages/ReviewOffersPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   const location = useLocation();
@@ -81,6 +82,7 @@ function App() {
             }
           />
           {/* Catch-all for 404 Not Found would go here */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AnimatePresence>
     </MainLayout>

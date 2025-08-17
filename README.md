@@ -52,6 +52,7 @@ npm run dev
 
 ## Project Structure
 
+```sh
 src/
 ├── components/ # Reusable UI components
 ├── context/ # React context providers
@@ -59,3 +60,4 @@ src/
 ├── pages/ # Application pages
 ├── services/ # Business logic and data handling
 └── assets/ # Static assets
+```

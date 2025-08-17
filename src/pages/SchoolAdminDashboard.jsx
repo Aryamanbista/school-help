@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { requestService } from "../services/requestService";
 import Card from "../components/Card";
@@ -15,58 +16,109 @@ const SchoolAdminDashboard = () => {
     }
   }, [currentUser]);
 
-  const getStatusColor = (status) => {
+  const getStatusStyles = (status) => {
     switch (status) {
       case "NEW":
-        return "text-blue-600";
+        return "bg-blue-100 text-blue-800";
       case "PENDING":
-        return "text-yellow-600";
+        return "bg-yellow-100 text-yellow-800";
       case "CLOSED":
-        return "text-gray-500";
+        return "bg-neutral-200 text-neutral-800";
       default:
-        return "text-gray-700";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
+  };
+
+  const itemVariants = {
+    hidden: { x: -20, opacity: 0 },
+    visible: { x: 0, opacity: 1 },
+  };
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">School Dashboard</h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full"
+    >
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-extrabold text-neutral-900">
+            Admin Dashboard
+          </h1>
+          <p className="mt-1 text-lg text-neutral-500">
+            Manage your school's help requests.
+          </p>
+        </div>
         <Link to="/school-admin/create-request">
-          <Button>Create New Request</Button>
+          <Button className="py-3 px-5">Create New Request</Button>
         </Link>
       </div>
 
       <Card>
-        <h2 className="text-2xl font-bold mb-4">Your Requests</h2>
+        <h2 className="text-2xl font-bold text-neutral-800 mb-4">
+          Your Requests
+        </h2>
         {requests.length > 0 ? (
-          <div className="space-y-4">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-3"
+          >
             {requests.map((req) => (
-              <Link
-                to={`/school-admin/review-offers/${req.requestID}`}
+              <motion.div
                 key={req.requestID}
+                variants={itemVariants}
+                whileHover={{
+                  backgroundColor: "#f8fafc" /* slate-50 */,
+                  transition: { duration: 0.2 },
+                }}
+                className="rounded-lg"
               >
-                <div className="p-4 border rounded-lg hover:bg-gray-50 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{req.description}</p>
-                    <p className="text-sm text-gray-500">
-                      Posted: {new Date(req.requestDate).toLocaleDateString()}
-                    </p>
+                <Link
+                  to={`/school-admin/review-offers/${req.requestID}`}
+                  className="block p-4"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-neutral-700">
+                        {req.description}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        Posted: {new Date(req.requestDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span
+                      className={`font-semibold px-3 py-1 rounded-full text-xs ${getStatusStyles(
+                        req.requestStatus
+                      )}`}
+                    >
+                      {req.requestStatus}
+                    </span>
                   </div>
-                  <span
-                    className={`font-bold ${getStatusColor(req.requestStatus)}`}
-                  >
-                    {req.requestStatus}
-                  </span>
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
-          <p>You have not created any requests yet.</p>
+          <div className="text-center py-10">
+            <p className="text-neutral-500">
+              You have not created any requests yet.
+            </p>
+            <p className="text-neutral-400 text-sm mt-1">
+              Click "Create New Request" to get started.
+            </p>
+          </div>
         )}
       </Card>
-    </div>
+    </motion.div>
   );
 };
+
 export default SchoolAdminDashboard;
