@@ -28,7 +28,7 @@ const Header = () => {
   return (
     <header className="bg-white shadow-md w-full">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-blue-600">
+        <Link to="/" className="text-2xl font-bold text-primary">
           SchoolHelp
         </Link>
         <div>
@@ -37,7 +37,7 @@ const Header = () => {
               <span>Welcome, {currentUser.fullname}!</span>
               <Link
                 to={getDashboardLink()}
-                className="text-gray-600 hover:text-blue-600"
+                className="text-gray-600 hover:text-primary"
               >
                 Dashboard
               </Link>
@@ -47,7 +47,7 @@ const Header = () => {
             <div className="space-x-4">
               <Link
                 to="/login"
-                className="text-gray-600 hover:text-blue-600 px-4"
+                className="text-gray-600 hover:text-primary px-4"
               >
                 Login
               </Link>

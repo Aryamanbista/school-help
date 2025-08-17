@@ -52,6 +52,10 @@ const getRequests = () => {
   return JSON.parse(localStorage.getItem(REQUESTS_KEY)) || [];
 };
 
+const saveRequests = (requests) => {
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
+};
+
 export const requestService = {
   getAllNewRequests: () => {
     const requests = getRequests();
@@ -60,5 +64,31 @@ export const requestService = {
   getRequestById: (id) => {
     const requests = getRequests();
     return requests.find((r) => r.requestID === parseInt(id));
+  },
+  getRequestsBySchoolId: (schoolId) => {
+    const requests = getRequests();
+    return requests
+      .filter((r) => r.schoolID === schoolId)
+      .sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+  },
+  addRequest: (requestData) => {
+    const requests = getRequests();
+    const newRequest = {
+      requestID: new Date().getTime(),
+      ...requestData,
+      requestDate: new Date().toISOString(),
+      requestStatus: "NEW",
+    };
+    requests.push(newRequest);
+    saveRequests(requests);
+    return newRequest;
+  },
+  closeRequest: (requestId) => {
+    const requests = getRequests();
+    const requestIndex = requests.findIndex((r) => r.requestID === requestId);
+    if (requestIndex !== -1) {
+      requests[requestIndex].requestStatus = "CLOSED";
+      saveRequests(requests);
+    }
   },
 };

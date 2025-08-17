@@ -1,51 +1,75 @@
-const USERS_KEY = 'schoolhelp_users';
-const CURRENT_USER_KEY = 'schoolhelp_currentUser';
+const USERS_KEY = "schoolhelp_users";
+const CURRENT_USER_KEY = "schoolhelp_currentUser";
+
+const initializeUsers = () => {
+  const users = localStorage.getItem(USERS_KEY);
+  if (!users) {
+    // Add a default admin if no users exist
+    const defaultAdmin = {
+      username: "admin",
+      password: "password",
+      fullname: "Admin User",
+      email: "admin@school.com",
+      role: "School Admin",
+      schoolID: 101, // Assign to "City High School"
+      schoolName: "City High School",
+    };
+    saveUsers([defaultAdmin]);
+  }
+};
+
+initializeUsers();
 
 // Helper function to get users from localStorage
 const getUsers = () => {
-    const users = localStorage.getItem(USERS_KEY);
-    return users ? JSON.parse(users) : [];
+  const users = localStorage.getItem(USERS_KEY);
+  return users ? JSON.parse(users) : [];
 };
 
 // Helper function to save users to localStorage
 const saveUsers = (users) => {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
 export const authService = {
-    registerVolunteer: (userData) => {
-        const users = getUsers();
-        const existingUser = users.find(user => user.username === userData.username || user.email === userData.email);
+  registerVolunteer: (userData) => {
+    const users = getUsers();
+    const existingUser = users.find(
+      (user) =>
+        user.username === userData.username || user.email === userData.email
+    );
 
-        if (existingUser) {
-            throw new Error('Username or email already exists.');
-        }
-
-        // In a real app, hash the password here. For now, we store it as is.
-        const newUser = { ...userData, role: 'Volunteer' };
-        users.push(newUser);
-        saveUsers(users);
-        return newUser;
-    },
-
-    login: (username, password) => {
-        const users = getUsers();
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (!user) {
-            throw new Error('Invalid username or password.');
-        }
-
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-        return user;
-    },
-
-    logout: () => {
-        localStorage.removeItem(CURRENT_USER_KEY);
-    },
-
-    getCurrentUser: () => {
-        const user = localStorage.getItem(CURRENT_USER_KEY);
-        return user ? JSON.parse(user) : null;
+    if (existingUser) {
+      throw new Error("Username or email already exists.");
     }
+
+    // In a real app, hash the password here. For now, we store it as is.
+    const newUser = { ...userData, role: "Volunteer" };
+    users.push(newUser);
+    saveUsers(users);
+    return newUser;
+  },
+
+  login: (username, password) => {
+    const users = getUsers();
+    const user = users.find(
+      (u) => u.username === username && u.password === password
+    );
+
+    if (!user) {
+      throw new Error("Invalid username or password.");
+    }
+
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    return user;
+  },
+
+  logout: () => {
+    localStorage.removeItem(CURRENT_USER_KEY);
+  },
+
+  getCurrentUser: () => {
+    const user = localStorage.getItem(CURRENT_USER_KEY);
+    return user ? JSON.parse(user) : null;
+  },
 };

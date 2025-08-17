@@ -18,7 +18,7 @@ const VolunteerDashboard = () => {
           {requests.map((req) => (
             <Link to={`/request/${req.requestID}`} key={req.requestID}>
               <Card className="hover:shadow-xl transition-shadow">
-                <h2 className="text-xl font-bold text-blue-600">
+                <h2 className="text-xl font-bold text-primary">
                   {req.requestType} Request
                 </h2>
                 <p className="mt-2 text-gray-700">{req.description}</p>

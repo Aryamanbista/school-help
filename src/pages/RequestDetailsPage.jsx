@@ -84,7 +84,7 @@ const RequestDetailsPage = () => {
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="Enter any remarks (e.g., your qualifications, availability, etc.)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             rows="4"
             required
           ></textarea>

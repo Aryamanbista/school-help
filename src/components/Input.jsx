@@ -1,6 +1,13 @@
-import React from 'react';
+import React from "react";
 
-const Input = ({ type = 'text', placeholder, value, onChange, name, className = '' }) => {
+const Input = ({
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  name,
+  className = "",
+}) => {
   return (
     <input
       type={type}
@@ -8,7 +15,7 @@ const Input = ({ type = 'text', placeholder, value, onChange, name, className = 
       value={value}
       onChange={onChange}
       name={name}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${className}`}
     />
   );
 };
