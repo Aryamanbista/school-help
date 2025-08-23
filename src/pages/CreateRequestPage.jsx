@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { requestService } from "../services/requestService";
-import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
+import api from "../services/api";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import toast from "react-hot-toast";
 import { FaArrowLeft } from "react-icons/fa";
 
 const CreateRequestPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
   const [requestType, setRequestType] = useState("Tutorial");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
     studentLevel: "",
@@ -21,48 +20,59 @@ const CreateRequestPage = () => {
     numRequired: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleGoBack = () => navigate(-1);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      schoolID: currentUser.schoolID,
-      schoolName: currentUser.schoolName,
-      city: "Metroville", // Should be part of school data
+    setIsSubmitting(true);
+
+    // Prepare payload based on request type
+    let payload = {
       requestType,
       description: formData.description,
-      ...(requestType === "Tutorial"
-        ? {
-            studentLevel: formData.studentLevel,
-            numStudents: formData.numStudents,
-          }
-        : {
-            resourceType: formData.resourceType,
-            numRequired: formData.numRequired,
-          }),
     };
-    requestService.addRequest(payload);
-    toast.success("Request submitted successfully!");
-    navigate("/school-admin/dashboard");
-  };
 
-  const handleGoBack = () => {
-    navigate(-1);
+    if (requestType === "Tutorial") {
+      payload = {
+        ...payload,
+        studentLevel: formData.studentLevel,
+        numStudents: formData.numStudents,
+      };
+    } else {
+      payload = {
+        ...payload,
+        resourceType: formData.resourceType,
+        numRequired: formData.numRequired,
+      };
+    }
+
+    try {
+      await api.post("/requests", payload);
+      toast.success("Request submitted successfully!");
+      navigate("/school-admin/dashboard");
+    } catch (error) {
+      console.error("Failed to create request", error);
+      const message =
+        error.response?.data?.message || "Failed to create request.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="max-w-4xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
     >
       <div className="mb-6">
         <button
           onClick={handleGoBack}
-          className="flex items-center space-x-2 text-sm font-semibold text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="flex items-center space-x-2 text-sm font-semibold text-neutral-500 hover:text-neutral-900"
         >
           <FaArrowLeft />
           <span>Back to Dashboard</span>
@@ -71,11 +81,11 @@ const CreateRequestPage = () => {
       <Card className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Create New Request</h1>
         <div className="mb-4">
-          <label className="mr-4">Request Type:</label>
+          <label className="mr-4 text-sm font-medium">Request Type:</label>
           <select
             onChange={(e) => setRequestType(e.target.value)}
             value={requestType}
-            className="p-2 border rounded-lg"
+            className="p-2 border border-neutral-300 rounded-lg"
           >
             <option value="Tutorial">Tutorial Request</option>
             <option value="Resource">Resource Request</option>
@@ -113,7 +123,7 @@ const CreateRequestPage = () => {
                 name="resourceType"
                 onChange={handleChange}
                 value={formData.resourceType}
-                className="w-full p-2 border rounded-lg"
+                className="w-full p-2 border border-neutral-300 rounded-lg"
                 required
               >
                 <option value="">Select Resource Type</option>
@@ -133,12 +143,17 @@ const CreateRequestPage = () => {
               />
             </>
           )}
-          <Button type="submit" className="w-full">
-            Submit Request
+          <Button
+            type="submit"
+            className="w-full !mt-6"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit Request"}
           </Button>
         </form>
       </Card>
     </motion.div>
   );
 };
+
 export default CreateRequestPage;

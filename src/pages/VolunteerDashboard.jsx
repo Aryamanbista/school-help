@@ -1,27 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { requestService } from "../services/requestService";
+import api from "../services/api";
 import Card from "../components/Card";
+import LoadingSpinner from "../components/LoadingSpinner";
 import { FaChalkboardTeacher, FaLaptop } from "react-icons/fa";
 
 const VolunteerDashboard = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setRequests(requestService.getAllNewRequests());
+    const fetchRequests = async () => {
+      try {
+        const { data } = await api.get("/requests");
+        setRequests(data);
+      } catch (error) {
+        console.error("Failed to fetch requests", error);
+        toast.error("Could not load requests.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequests();
   }, []);
 
-  // Animation variants for the container and list items
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
-
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 },
   };
+
+  if (loading) return <LoadingSpinner />;
 
   return (
     <motion.div
@@ -35,11 +48,9 @@ const VolunteerDashboard = () => {
           Available Requests
         </h1>
         <p className="mt-2 text-lg text-neutral-500">
-          Here's where you can make a difference. Select a request to view
-          details.
+          Here's where you can make a difference.
         </p>
       </div>
-
       {requests.length > 0 ? (
         <motion.div
           variants={containerVariants}
@@ -49,11 +60,11 @@ const VolunteerDashboard = () => {
         >
           {requests.map((req) => (
             <motion.div
-              key={req.requestID}
+              key={req._id}
               variants={itemVariants}
               whileHover={{ scale: 1.05, y: -5, transition: { duration: 0.2 } }}
             >
-              <Link to={`/request/${req.requestID}`}>
+              <Link to={`/request/${req._id}`}>
                 <Card className="h-full flex flex-col">
                   <div className="flex-grow">
                     <div className="flex items-center space-x-3 mb-3">
@@ -63,17 +74,17 @@ const VolunteerDashboard = () => {
                         <FaLaptop className="text-primary text-2xl" />
                       )}
                       <h2 className="text-xl font-bold text-neutral-800">
-                        {req.requestType} Request
+                        {req.school.schoolName}
                       </h2>
                     </div>
                     <p className="mt-2 text-neutral-600">{req.description}</p>
                   </div>
                   <div className="mt-4 pt-4 border-t border-neutral-100 text-sm text-neutral-500">
                     <p>
-                      <strong>School:</strong> {req.schoolName}
+                      <strong>Type:</strong> {req.requestType}
                     </p>
                     <p>
-                      <strong>City:</strong> {req.city}
+                      <strong>City:</strong> {req.school.city}
                     </p>
                   </div>
                 </Card>
@@ -84,7 +95,7 @@ const VolunteerDashboard = () => {
       ) : (
         <div className="text-center py-16">
           <p className="text-xl text-neutral-500">
-            No new requests available at the moment. Please check back later!
+            No new requests available right now.
           </p>
         </div>
       )}

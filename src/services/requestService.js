@@ -1,94 +1,30 @@
-const REQUESTS_KEY = "schoolhelp_requests";
-
-// Pre-populate with some data if it's the first time
-const initializeRequests = () => {
-  const requests = localStorage.getItem(REQUESTS_KEY);
-  if (!requests) {
-    const dummyRequests = [
-      {
-        requestID: 1,
-        schoolID: 101,
-        schoolName: "City High School",
-        city: "Metroville",
-        requestDate: new Date().toISOString(),
-        requestStatus: "NEW",
-        description: "Need volunteer tutor for Grade 10 Math.",
-        requestType: "Tutorial",
-        studentLevel: "Grade 10",
-        numStudents: 15,
-      },
-      {
-        requestID: 2,
-        schoolID: 102,
-        schoolName: "Suburb Middle School",
-        city: "Suburbia",
-        requestDate: new Date().toISOString(),
-        requestStatus: "NEW",
-        description: "Requesting 20 used laptops for our library.",
-        requestType: "Resource",
-        resourceType: "personal computer",
-        numRequired: 20,
-      },
-      {
-        requestID: 3,
-        schoolID: 101,
-        schoolName: "City High School",
-        city: "Metroville",
-        requestDate: new Date().toISOString(),
-        requestStatus: "CLOSED",
-        description: "English literature session for Grade 9.",
-        requestType: "Tutorial",
-        studentLevel: "Grade 9",
-        numStudents: 25,
-      },
-    ];
-    localStorage.setItem(REQUESTS_KEY, JSON.stringify(dummyRequests));
-  }
-};
-
-initializeRequests();
-
-const getRequests = () => {
-  return JSON.parse(localStorage.getItem(REQUESTS_KEY)) || [];
-};
-
-const saveRequests = (requests) => {
-  localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
-};
+import api from "./api";
 
 export const requestService = {
-  getAllNewRequests: () => {
-    const requests = getRequests();
-    return requests.filter((r) => r.requestStatus === "NEW");
+  getAllNewRequests: async () => {
+    const response = await api.get("/requests");
+    return response.data;
   },
-  getRequestById: (id) => {
-    const requests = getRequests();
-    return requests.find((r) => r.requestID === parseInt(id));
+
+  getRequestById: async (id) => {
+    const response = await api.get(`/requests/${id}`);
+    return response.data;
   },
-  getRequestsBySchoolId: (schoolId) => {
-    const requests = getRequests();
-    return requests
-      .filter((r) => r.schoolID === schoolId)
-      .sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+
+  getRequestsBySchoolId: async () => {
+    const response = await api.get("/requests/myschool");
+    return response.data;
   },
-  addRequest: (requestData) => {
-    const requests = getRequests();
-    const newRequest = {
-      requestID: new Date().getTime(),
-      ...requestData,
-      requestDate: new Date().toISOString(),
-      requestStatus: "NEW",
-    };
-    requests.push(newRequest);
-    saveRequests(requests);
-    return newRequest;
+
+  addRequest: async (requestData) => {
+    const response = await api.post("/requests", requestData);
+    return response.data;
   },
-  closeRequest: (requestId) => {
-    const requests = getRequests();
-    const requestIndex = requests.findIndex((r) => r.requestID === requestId);
-    if (requestIndex !== -1) {
-      requests[requestIndex].requestStatus = "CLOSED";
-      saveRequests(requests);
-    }
+
+  // Note: The backend endpoint for this was not built, but this is how you'd call it.
+  closeRequest: async (requestId) => {
+    // const response = await api.put(`/requests/${requestId}/close`);
+    console.warn("closeRequest API endpoint is not yet implemented.");
+    return Promise.resolve(); // Return a resolved promise to avoid breaking the UI
   },
 };

@@ -37,10 +37,16 @@ const getRequestById = async (req, res) => {
 // @route   POST /api/requests
 // @access  Private/SchoolAdmin
 const createRequest = async (req, res) => {
+  // --- ADD THESE LOGS ---
+  console.log("--- CREATE REQUEST INITIATED ---");
+  console.log("Request Body from Frontend:", req.body);
+  console.log("User object from middleware:", req.user);
+  // --- END OF LOGS ---
+
   const { description, requestType, ...details } = req.body;
   try {
     const newRequest = new Request({
-      school: req.user.school, // Get school from the logged-in admin user
+      school: req.user.school, // This is the line that's likely failing
       description,
       requestType,
       ...details,
@@ -48,6 +54,9 @@ const createRequest = async (req, res) => {
     const savedRequest = await newRequest.save();
     res.status(201).json(savedRequest);
   } catch (error) {
+    // --- ADD THIS LOG ---
+    console.error("ERROR during request creation:", error);
+    // --- END OF LOG ---
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

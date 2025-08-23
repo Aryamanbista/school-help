@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
-import { requestService } from "../services/requestService";
+import api from "../services/api";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const SchoolAdminDashboard = () => {
-  const { currentUser } = useAuth();
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser && currentUser.schoolID) {
-      setRequests(requestService.getRequestsBySchoolId(currentUser.schoolID));
-    }
-  }, [currentUser]);
+    const fetchSchoolRequests = async () => {
+      try {
+        // This new endpoint gets requests just for the admin's school
+        const { data } = await api.get("/requests/myschool");
+        setRequests(data);
+      } catch (error) {
+        console.error("Failed to fetch school requests", error);
+        toast.error("Could not load your school's requests.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSchoolRequests();
+  }, []);
 
   const getStatusStyles = (status) => {
     switch (status) {
@@ -33,11 +43,12 @@ const SchoolAdminDashboard = () => {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
   };
-
   const itemVariants = {
     hidden: { x: -20, opacity: 0 },
     visible: { x: 0, opacity: 1 },
   };
+
+  if (loading) return <LoadingSpinner />;
 
   return (
     <motion.div
@@ -59,7 +70,6 @@ const SchoolAdminDashboard = () => {
           <Button className="py-3 px-5">Create New Request</Button>
         </Link>
       </div>
-
       <Card>
         <h2 className="text-2xl font-bold text-neutral-800 mb-4">
           Your Requests
@@ -73,16 +83,13 @@ const SchoolAdminDashboard = () => {
           >
             {requests.map((req) => (
               <motion.div
-                key={req.requestID}
+                key={req._id}
                 variants={itemVariants}
-                whileHover={{
-                  backgroundColor: "#f8fafc" /* slate-50 */,
-                  transition: { duration: 0.2 },
-                }}
+                whileHover={{ backgroundColor: "#f8fafc" }}
                 className="rounded-lg"
               >
                 <Link
-                  to={`/school-admin/review-offers/${req.requestID}`}
+                  to={`/school-admin/review-offers/${req._id}`}
                   className="block p-4"
                 >
                   <div className="flex justify-between items-center">
@@ -91,7 +98,7 @@ const SchoolAdminDashboard = () => {
                         {req.description}
                       </p>
                       <p className="text-sm text-neutral-500">
-                        Posted: {new Date(req.requestDate).toLocaleDateString()}
+                        Posted: {new Date(req.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <span
@@ -110,9 +117,6 @@ const SchoolAdminDashboard = () => {
           <div className="text-center py-10">
             <p className="text-neutral-500">
               You have not created any requests yet.
-            </p>
-            <p className="text-neutral-400 text-sm mt-1">
-              Click "Create New Request" to get started.
             </p>
           </div>
         )}

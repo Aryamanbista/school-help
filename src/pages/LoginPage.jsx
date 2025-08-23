@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-// import { authService } from "../services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { useAuth } from "../context/AuthContext";
-import { useLocation } from "react-router-dom";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
-  const { login } = useAuth();
   const location = useLocation();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const from = location.state?.from?.pathname || "/";
 
   const handleChange = (e) => {
@@ -20,54 +21,85 @@ const LoginPage = () => {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setIsSubmitting(true);
     try {
-      const user = login(formData.username, formData.password); // Use login from context
+      const user = await login(formData.username, formData.password);
+      toast.success(`Welcome back, ${user.fullname}!`);
 
-      // Redirect based on role, or to the page they were trying to access
+      // Redirect based on role or previous location
       if (from !== "/") {
         navigate(from, { replace: true });
-      } else if (user.role === "Volunteer") {
-        navigate("/volunteer/dashboard", { replace: true });
       } else if (user.role === "School Admin") {
         navigate("/school-admin/dashboard", { replace: true });
       } else {
-        navigate("/", { replace: true });
+        navigate("/volunteer/dashboard", { replace: true });
       }
     } catch (err) {
-      setError(err.message);
+      const message =
+        err.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex justify-center">
-      <Card className="w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <Button type="submit" className="w-full">
-            Login
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <Card className="w-full max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-center text-neutral-900 mb-6">
+          Welcome Back
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-neutral-700 mb-1"
+            >
+              Username
+            </label>
+            <Input
+              id="username"
+              name="username"
+              placeholder="Your username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-neutral-700 mb-1"
+            >
+              Password
+            </label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full !mt-8 py-3"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Logging In..." : "Login"}
           </Button>
         </form>
       </Card>
-    </div>
+    </motion.div>
   );
 };
 

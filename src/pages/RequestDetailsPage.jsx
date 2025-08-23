@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { requestService } from "../services/requestService";
-import { offerService } from "../services/offerService";
-import { useAuth } from "../context/AuthContext";
+import api from "../services/api"; // Use our central api client
 import Card from "../components/Card";
 import Button from "../components/Button";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -12,55 +10,53 @@ import { FaArrowLeft } from "react-icons/fa";
 
 const RequestDetailsPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // Hook for navigation
-  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [request, setRequest] = useState(null);
   const [remarks, setRemarks] = useState("");
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const req = requestService.getRequestById(id);
-    if (req) {
-      setRequest(req);
-    } else {
-      // Handle case where request is not found
-      toast.error("Request not found.");
-      navigate("/volunteer/dashboard");
-    }
+    const fetchRequest = async () => {
+      try {
+        const { data } = await api.get(`/requests/${id}`);
+        setRequest(data);
+      } catch (error) {
+        console.error("Failed to fetch request details", error);
+        toast.error("Could not find the requested item.");
+        navigate("/volunteer/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequest();
   }, [id, navigate]);
 
-  const handleSubmitOffer = (e) => {
+  const handleSubmitOffer = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
-    if (!currentUser || currentUser.role !== "Volunteer") {
-      toast.error("Only registered volunteers can make offers.");
-      setSubmitting(false);
-      return;
-    }
-
-    const offerData = {
-      requestID: request.requestID,
-      volunteerID: currentUser.username, // Using username as ID for simplicity
-      volunteerName: currentUser.fullname,
-      remarks,
-    };
-
-    // Simulate network delay
-    setTimeout(() => {
-      offerService.submitOffer(offerData);
+    try {
+      const offerData = {
+        request: request._id, // The backend needs the request ID
+        remarks,
+      };
+      await api.post("/offers", offerData);
       toast.success("Your offer has been submitted successfully!");
-      setSubmitting(false);
       navigate("/volunteer/dashboard");
-    }, 1000);
+    } catch (error) {
+      console.error("Failed to submit offer", error);
+      const message =
+        error.response?.data?.message || "Failed to submit offer.";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // Function to handle clicking the back button
-  const handleGoBack = () => {
-    navigate(-1); // This navigates to the previous entry in the history stack
-  };
+  const handleGoBack = () => navigate(-1);
 
-  if (!request) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner />;
+  if (!request) return null; // Or a "Not Found" message
 
   return (
     <motion.div
@@ -69,7 +65,6 @@ const RequestDetailsPage = () => {
       exit={{ opacity: 0, y: -20 }}
       className="max-w-4xl mx-auto"
     >
-      {/* --- Back Button Added Here --- */}
       <div className="mb-6">
         <button
           onClick={handleGoBack}
@@ -79,15 +74,10 @@ const RequestDetailsPage = () => {
           <span>Back to Requests</span>
         </button>
       </div>
-      {/* --- End of Back Button --- */}
 
       <Card>
         <span
-          className={`font-semibold px-3 py-1 rounded-full text-xs mb-4 inline-block ${
-            request.requestStatus === "NEW"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-neutral-200 text-neutral-800"
-          }`}
+          className={`font-semibold px-3 py-1 rounded-full text-xs mb-4 inline-block bg-blue-100 text-blue-800`}
         >
           {request.requestStatus}
         </span>
@@ -96,7 +86,8 @@ const RequestDetailsPage = () => {
         </h1>
         <div className="space-y-3 text-neutral-700 border-t border-neutral-100 pt-4">
           <p>
-            <strong>School:</strong> {request.schoolName}, {request.city}
+            <strong>School:</strong> {request.school.schoolName},{" "}
+            {request.school.city}
           </p>
           {request.requestType === "Tutorial" && (
             <>
@@ -140,7 +131,7 @@ const RequestDetailsPage = () => {
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-light"
             rows="5"
             required
-          ></textarea>
+          />
           <Button
             type="submit"
             className="mt-4 w-full py-3"
